@@ -1,14 +1,15 @@
 "use client";
 import React from "react";
-import "tailwindcss/tailwind.css";
 import Image from "next/image";
 import Link from "next/link";
 import logotext from "../../Assets/hero-text.png";
 import heroright from "../../Assets/hero-left.png";
-import { token, baseUrl, useUserData } from "@/config";
+import { useUserData } from "@/config";
 
 const HeroSection = () => {
   const allData = useUserData(); 
+  const token = allData?.token;
+  // console.log(token.length > 0);
   return (
     <div className="bg-[#081F5C] text-white">
       <div className="hero lg:h-[80vh]">

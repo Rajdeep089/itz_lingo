@@ -1,16 +1,17 @@
-import 'tailwindcss/tailwind.css'
+"use client"
+// import 'tailwindcss/tailwind.css'
 import Navbar from '@/components/Navbar'
 import HeroSection from './components/HeroSection'
 import UserSection from './components/UserSection'
-import Head from 'next/head'
-import icon from "../public/next.svg"
+// import Head from 'next/head'
+// import icon from "../public/next.svg"
 
 export default function Home() {
   return (
     <div>
-      <Head>
+      {/* <Head>
       <link rel="icon" href={icon} />
-      </Head>
+      </Head> */}
       <Navbar />
       <HeroSection />
       <UserSection />

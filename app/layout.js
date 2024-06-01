@@ -1,8 +1,9 @@
 import { Inter } from "next/font/google";
-import Head from "next/head";
-import "./globals.css";
-import 'tailwindcss/tailwind.css'
-import icon from "../public/next.svg"
+// import Head from "next/head";
+import "../styles/globals.css";
+// import 'tailwindcss/tailwind.css'
+// import icon from "../public/next.svg"
+
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -14,9 +15,9 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <Head>
+      {/* <Head>
         <link rel="icon" href={icon}/>
-      </Head>
+      </Head> */}
       <body className={inter.className}>{children}</body>
     </html>
   );

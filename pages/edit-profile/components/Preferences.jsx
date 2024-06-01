@@ -2,9 +2,11 @@ import React, { useState,useEffect } from "react";
 import "tailwindcss/tailwind.css";
 import MultiRangeSlider from "@/components/MultiRangeSlider/MultiRangeSlider";
 import axios from "axios";
-import { baseUrl, token } from "@/config";
+import { baseUrl } from "@/config";
 
 const Preferences = (setSubmitPreferences) => {
+
+  const [token, setToken] = useState(null);
   const [formData, setFormData] = useState({
     purpose: "",
     partnerGender: "",
@@ -12,11 +14,9 @@ const Preferences = (setSubmitPreferences) => {
   });
 
 
-  // useEffect(() => {
-  //   const handleRange = (min, max) => {
-  //     setFormData({ ...formData, partnerAgeRange: [min, max] });
-  //   }
-  // }, []);
+  useEffect(() => {
+    setToken(localStorage.getItem("token"));
+  }, []);
 
 
 

@@ -7,15 +7,7 @@ const baseUrl = "http://3.109.210.144:8000";
 
 // const baseUrl = "https://president-tries-reality-specs.trycloudflare.com";
 
-let token;
-if (typeof window !== "undefined") {
-  token = localStorage.getItem("token");
-}
-const config = {
-  headers: {
-    Authorization: token ? `Bearer ${token}` : '',
-  },
-};
+
 
 const useUserData = () => {
   const [userData, setUserData] = useState({
@@ -29,9 +21,13 @@ const useUserData = () => {
     profilePhoto: "N/A",
   });
 
+  const [token, setToken] = useState(null);
+
   useEffect(() => {
+
+    setToken(localStorage.getItem("token"));
+
     const fetchData = async () => {
-      const token = localStorage.getItem("token");
       if (token) {
         try {
           const response = await axios.get(`${baseUrl}/v1/user`, {
@@ -81,14 +77,6 @@ const useUserData = () => {
   return userData;
 };
 
-const logout = () => {
-  try {
-    if (typeof window !== "undefined") {
-      localStorage.clear();
-    }
-  } catch (error) {
-    console.log(error);
-  }
-};
 
-module.exports = { baseUrl, token, config, useUserData, logout };
+
+module.exports = { baseUrl, useUserData };

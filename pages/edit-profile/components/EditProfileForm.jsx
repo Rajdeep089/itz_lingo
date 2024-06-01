@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "tailwindcss/tailwind.css";
 import axios from "axios";
 import DatePicker from "react-tailwindcss-datepicker";
-import { useUserData, baseUrl, token } from "@/config";
+import { useUserData, baseUrl } from "@/config";
 
 const EditProfileForm = ( {setSubmitProfile}) => {
   
@@ -15,6 +15,7 @@ const EditProfileForm = ( {setSubmitProfile}) => {
   const [otpSent, setOtpSent] = useState(false);
   const [verified, setVerified] = useState(false);
   const [otp, setOtp] = useState("");
+  const [token, setToken] = useState(null);
   const [formData, setFormData] = useState({
     name: "",   
     email: "",
@@ -27,6 +28,10 @@ const EditProfileForm = ( {setSubmitProfile}) => {
   })
 
   const [countDown, setCountDown] = useState(60000);
+
+  useEffect(() => {
+    setToken(localStorage.getItem("token"));
+  }, []);
 
   useEffect(() => {
     if (allData) {

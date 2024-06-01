@@ -1,10 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import "tailwindcss/tailwind.css";
 import Link from "next/link";
 import Image from "next/image";
 import Logo from "../Assets/logo.png";
-import { token } from "../config/index";
 import { useUserData } from "../config";
 import { useRouter } from "next/navigation";
 
@@ -13,7 +11,16 @@ const Navbar = () => {
 
   const allData = useUserData();
 
+ 
+
+  
+
   const [userData, setUserData] = useState({});
+  const [token, setToken] = useState(null);
+
+  useEffect(() => {
+    setToken(localStorage.getItem("token"));
+  }, []);
 
   useEffect(() => {
     if (allData) {
@@ -26,9 +33,9 @@ const Navbar = () => {
   }, [allData]);
 
 
-  const name = localStorage.getItem("name");
-  const email = localStorage.getItem("email");
-  const image = localStorage.getItem("profilePhoto");
+  // const name = localStorage.getItem("name");
+  // const email = localStorage.getItem("email");
+  // const image = localStorage.getItem("profilePhoto");
 
  
 
@@ -107,7 +114,7 @@ const Navbar = () => {
               <div className="w-16 rounded-full">
                 <img
                   alt="Tailwind CSS Navbar component"
-                  src={image}
+                  src={userData.profilePhoto}
                 />
               </div>
             </div>
@@ -121,7 +128,7 @@ const Navbar = () => {
                     <img
                       className="w-10 rounded-full"
                       alt="Avatar"
-                      src={image}
+                      src={userData.profilePhoto}
                     />
                     <div className="ml-4">
                       <div className="font-bold">
