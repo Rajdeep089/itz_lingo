@@ -84,6 +84,7 @@ const Chats = () => {
 
   console.log(users);
   console.log(unreadMsgs);
+  console.log(messages)
 
   return (
     <div>
@@ -119,7 +120,7 @@ const Chats = () => {
                 <div className="w-10 rounded-full">
                   <img
                     alt="User avatar"
-                    src={message.senderId === userId ? user.profilePhoto : "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg"}
+                    src={message.senderId === userId ? users.profilePhoto : "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg"}
                   />
                 </div>
               </div>
