@@ -3,7 +3,7 @@ import "tailwindcss/tailwind.css";
 import EditProfileForm from "./components/EditProfileForm";
 import Preferences from "./components/Preferences";
 import PaymentInfo from "./components/PaymentInfo";
-import {  useUserData, baseUrl, token } from "@/config";
+import {  useUserData, baseUrl } from "@/config";
 import axios from "axios";
 
 const EditProfile = () => {
@@ -11,6 +11,7 @@ const EditProfile = () => {
   const allData = useUserData();
 
   const [toggle, setToggle] = useState(1);
+  const [token, setToken] = useState(null);
   const [submitProfile, setSubmitProfile] = useState(false);
   const [submitPreferences, setSubmitPreferences] = useState(false);
   const [submitPaymentInfo, setSubmitPaymentInfo] = useState(false);
@@ -21,6 +22,10 @@ const EditProfile = () => {
       setImageUrl(allData.profilePhoto);
     }
   }, [allData]);
+
+  useEffect(() => {
+    setToken(localStorage.getItem("token"));
+  }, []);
 
   const handleToggle = (num) => {
     // Prevent moving to the next step until the current step is completed
