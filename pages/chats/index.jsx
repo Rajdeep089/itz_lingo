@@ -180,7 +180,7 @@ const Chats = () => {
 
             <div className="flex flex-col gap-2 bg-base-300 py-3 px-1 rounded-xl">
               {users && users.length > 0 ? (
-                users.map((user, index) => <UserCard key={index} user={user} setConvoId={setConvoId} />)
+                users.map((user, index) => <UserCard key={index} users={user} setConvoId={setConvoId} />)
               ) : (
                 <p>No friends found.</p>
               )}
