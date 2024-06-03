@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import "tailwindcss/tailwind.css";
 import axios from "axios";
 import GIcon from "../../Assets/google-color-icon.svg";
 import FIcon from "../../Assets/facebook.svg";

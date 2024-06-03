@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import "tailwindcss/tailwind.css";
 import EditProfileForm from "./components/EditProfileForm";
 import Preferences from "./components/Preferences";
 import PaymentInfo from "./components/PaymentInfo";

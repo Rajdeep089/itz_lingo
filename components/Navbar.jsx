@@ -3,43 +3,31 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Logo from "../Assets/logo.png";
-import { useUserData } from "../config";
+// import { useUserData } from "../config";
 import { useRouter } from "next/navigation";
 
 const Navbar = () => {
   const router = useRouter();
-
-  const allData = useUserData();
-
- 
-
-  
-
+  // const allData = useUserData();
   const [userData, setUserData] = useState({});
   const [token, setToken] = useState(null);
 
   useEffect(() => {
-    setToken(localStorage.getItem("token"));
+    const storedToken = localStorage.getItem("token");
+    setToken(storedToken);
   }, []);
 
   useEffect(() => {
-    if (allData) {
+    if (token) {
       setUserData({
-        name: allData.name || "",
-        email: allData.email || "",
-        profilePhoto: allData.profilePhoto || "",
+        name: localStorage.getItem("name") || "",
+        email: localStorage.getItem("email") || "",
+        profilePhoto: localStorage.getItem("profilePhoto") || "https://img.freepik.com/free-vector/user-circles-set_78370-4704.jpg?w=740&t=st=1717239089~exp=1717239689~hmac=a9d545fd4d72cf1418c9d0085aa91c7f6c60bd4d8e2fe84d5dd5a94e2350dc4d",
       });
     }
-  }, [allData]);
+  }, [token]);
 
 
-  // const name = localStorage.getItem("name");
-  // const email = localStorage.getItem("email");
-  // const image = localStorage.getItem("profilePhoto");
-
- 
-
-  // console.log(localStorage.getItem("user"));
 
   return (
     <div className="navbar bg-base-100">
@@ -114,6 +102,7 @@ const Navbar = () => {
               <div className="w-16 rounded-full">
                 <img
                   alt="Tailwind CSS Navbar component"
+                  loading="lazy"
                   src={userData.profilePhoto}
                 />
               </div>
@@ -128,6 +117,7 @@ const Navbar = () => {
                     <img
                       className="w-10 rounded-full"
                       alt="Avatar"
+                      loading="lazy"
                       src={userData.profilePhoto}
                     />
                     <div className="ml-4">

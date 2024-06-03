@@ -4,8 +4,6 @@ const UserCard = ({users, setConvoId}) => {
 
     const [user, setUser] = useState({})
 
-    // console.log(user)
-
 
     useEffect(() => {
       if (users) {
@@ -17,7 +15,9 @@ const UserCard = ({users, setConvoId}) => {
         if (user) {
             setConvoId({
               userId: user.user.id,
-              convoId: user.conversationId
+              convoId: user.conversationId,
+              name: user.user?.name,
+              photo: user?.profilePhoto ? user.profilePhoto : "https://img.freepik.com/free-vector/user-circles-set_78370-4704.jpg?w=740&t=st=1717239089~exp=1717239689~hmac=a9d545fd4d72cf1418c9d0085aa91c7f6c60bd4d8e2fe84d5dd5a94e2350dc4d",
             })
         }
     }

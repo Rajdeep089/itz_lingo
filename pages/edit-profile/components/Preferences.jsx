@@ -1,5 +1,4 @@
 import React, { useState,useEffect } from "react";
-import "tailwindcss/tailwind.css";
 import MultiRangeSlider from "@/components/MultiRangeSlider/MultiRangeSlider";
 import axios from "axios";
 import { baseUrl } from "@/config";

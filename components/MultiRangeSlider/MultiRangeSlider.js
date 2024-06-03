@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState, useRef } from "react";
 import debounce from "lodash/debounce";
 import PropTypes from "prop-types";
-import "./MultiRangeSlider.css";
 
 const MultiRangeSlider = ({ min, max, onChange }) => {
   const [minVal, setMinVal] = useState(min);
@@ -37,48 +36,92 @@ const MultiRangeSlider = ({ min, max, onChange }) => {
     }
   }, [maxVal, getPercent]);
 
- // Debounced change handler
- const debouncedOnChange = useCallback(debounce(onChange, 300), []);
+  // Debounced change handler
+  const debouncedOnChange = useCallback(debounce(onChange, 300), [onChange]);
 
- // Get min and max values when their state changes
- useEffect(() => {
-   debouncedOnChange({ min: minVal, max: maxVal });
- }, [minVal, maxVal, debouncedOnChange]);
+  // Get min and max values when their state changes
+  useEffect(() => {
+    debouncedOnChange({ min: minVal, max: maxVal });
+
+    // Cleanup the debounce on unmount
+    return () => {
+      debouncedOnChange.cancel();
+    };
+  }, [minVal, maxVal, debouncedOnChange]);
 
   return (
-    <div className="my-2">
-      <input
-        type="range"
-        min={min}
-        max={max}
-        value={minVal}
-        onChange={(event) => {
-          const value = Math.min(Number(event.target.value), maxVal - 1);
-          setMinVal(value);
-          minValRef.current = value;
-        }}
-        className="thumb thumb--left"
-        style={{ zIndex: minVal > max - 100 && "5" }}
-      />
-      <input
-        type="range"
-        min={min}
-        max={max}
-        value={maxVal}
-        onChange={(event) => {
-          const value = Math.max(Number(event.target.value), minVal + 1);
-          setMaxVal(value);
-          maxValRef.current = value;
-        }}
-        className="thumb thumb--right"
-      />
+    <div className="flex items-center justify-center mt-2">
+      <div className="relative w-full">
+        <input
+          type="range"
+          min={min}
+          max={max}
+          value={minVal}
+          onChange={(event) => {
+            const value = Math.min(Number(event.target.value), maxVal - 1);
+            setMinVal(value);
+            minValRef.current = value;
+          }}
+          className="absolute w-full h-0 pointer-events-none z-30"
+          style={{
+            zIndex: minVal > max - 100 ? 5 : "auto",
+            WebkitAppearance: "none",
+            appearance: "none",
+          }}
+        />
+        <input
+          type="range"
+          min={min}
+          max={max}
+          value={maxVal}
+          onChange={(event) => {
+            const value = Math.max(Number(event.target.value), minVal + 1);
+            setMaxVal(value);
+            maxValRef.current = value;
+          }}
+          className="absolute w-full h-0 pointer-events-none z-40"
+          style={{
+            WebkitAppearance: "none",
+            appearance: "none",
+          }}
+        />
 
-      <div className="slider">
-        <div className="slider__track" />
-        <div ref={range} className="slider__range" />
-        <div className="slider__left-value">{minVal}</div>
-        <div className="slider__right-value">{maxVal}</div>
+        <div className="relative">
+          <div  className="absolute w-full h-2 bg-gray-400 rounded" />
+          <div
+            ref={range}
+            className="absolute h-2 bg-blue-700 rounded "
+          />
+          <div className="absolute left-1 text-black text-xs mt-4">{minVal}</div>
+          <div className="absolute right-1 text-black text-xs mt-4">{maxVal}</div>
+        </div>
       </div>
+      <style jsx>{`
+        input[type="range"]::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 18px;
+          height: 18px;
+          background: #ffffff;
+          border-radius: 50%;
+          box-shadow: 0 0 1px 1px #000000;
+          cursor: pointer;
+          pointer-events: all;
+          position: relative;
+          margin-top: 4px;
+        }
+        input[type="range"]::-moz-range-thumb {
+          width: 18px;
+          height: 18px;
+          background: #ffffff;
+          border-radius: 50%;
+          box-shadow: 0 0 1px 1px #000000;
+          cursor: pointer;
+          pointer-events: all;
+          position: relative;
+          margin-top: 4px;
+        }
+      `}</style>
     </div>
   );
 };
@@ -86,7 +129,7 @@ const MultiRangeSlider = ({ min, max, onChange }) => {
 MultiRangeSlider.propTypes = {
   min: PropTypes.number.isRequired,
   max: PropTypes.number.isRequired,
-  onChange: PropTypes.func.isRequired
+  onChange: PropTypes.func.isRequired,
 };
 
 export default MultiRangeSlider;

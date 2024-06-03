@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import "tailwindcss/tailwind.css";
 import axios from "axios";
 import DatePicker from "react-tailwindcss-datepicker";
 import { useUserData, baseUrl } from "@/config";

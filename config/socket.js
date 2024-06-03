@@ -1,15 +1,17 @@
-import { io } from 'socket.io-client';
-import { baseUrl } from './index'; // Use your server URL
+import { io } from "socket.io-client";
+import { baseUrl } from "./index"; // Use your server URL
 
 let socket;
 
 export const initiateSocket = (token) => {
   socket = io(baseUrl, {
-    query: { token }
+    auth: {
+      token: `Bearer ${token}`,
+    },
   });
 
-  socket.on('connect', () => {
-    console.log('Connected to the socket server');
+  socket.on("connect", () => {
+    console.log("Connected to the socket server");
   });
 };
 
@@ -20,11 +22,12 @@ export const disconnectSocket = () => {
 export const subscribeToMessages = (callback) => {
   if (!socket) return;
 
-  socket.on('newMessage', (message) => {
+  socket.on("message", (message) => {
     callback(message);
+    console.log(message);
   });
 };
 
 export const sendMessage = (message) => {
-  if (socket) socket.emit('sendMessage', message);
+  if (socket) socket.emit("message", message);
 };

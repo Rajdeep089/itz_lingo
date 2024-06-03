@@ -1,5 +1,5 @@
 {
-  "name": "itz_lingo_next",
+  "name": "test-app",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -25,3 +25,4 @@
     "tailwindcss": "^3.4.3"
   }
 }
+
