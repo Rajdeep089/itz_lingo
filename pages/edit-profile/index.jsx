@@ -40,7 +40,7 @@ const EditProfile = () => {
 
     try {
       // Step 1: Request upload URL
-      const uploadResponse = await axios.post(`${baseUrl}/v1/file/user-url`, {
+      const uploadResponse = await axios.post(`${baseUrl}/v1/file/uploadurl`, {
         extension: file.name.split('.').pop(),
         size: file.size
       }, {
@@ -49,21 +49,26 @@ const EditProfile = () => {
         }
       });
 
-      const { key, url } = uploadResponse.data.data;
+      const { keyPrefix, url } = uploadResponse.data.data;
+
+      console.log(uploadResponse.data);
+      console.log(keyPrefix, url);
 
       // Step 2: Upload the file to the provided URL
-      await axios.put(url[0], file, {
-        headers: {
-          'Content-Type': file.type
-        }
-      });
+      await fetch(url, {
+            method: 'PUT',
+            body: file,
+            headers: {
+              'Content-Type': "",
+            }
+          });
 
       // Step 3: Save the uploaded image
-      const saveResponse = await axios.post(`${baseUrl}/v1/file/user-save`, {
-        key: key,
+      const saveResponse = await axios.post(`${baseUrl}/v1/file/save/userfile`, {
+        key: keyPrefix,
         extension: file.name.split('.').pop(),
         size: file.size,
-        path: "/path"
+        // path: "/path"
       }, {
         headers: {
           Authorization: `Bearer ${token}`
@@ -108,7 +113,7 @@ const EditProfile = () => {
         <div>
           <div className="avatar">
             <div className="w-24 rounded-full cursor-pointer">
-              <img src={imageUrl} alt="Profile" />
+              <img src={imageUrl} loading="lazy" alt="Profile" />
               <input type="file" className="absolute opacity-0 inset-0 cursor-pointer"  onChange={handleFileChange} />
             </div>
           </div>

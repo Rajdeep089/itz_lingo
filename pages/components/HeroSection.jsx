@@ -23,7 +23,7 @@ const HeroSection = () => {
       <div className="hero lg:h-[80vh]">
         <div className="hero-content flex-col-reverse lg:flex-row-reverse">
           
-            <Image src={heroright} alt="heroright" priority className="max-w-full md:max-w-xs"/>
+            <Image src={heroright} alt="heroright" priority={true} className="max-w-full md:max-w-xs"/>
           <div>
             <Image
             src={logotext}

@@ -3,6 +3,7 @@ import axios from "axios";
 import GIcon from "../../Assets/google-color-icon.svg";
 import FIcon from "../../Assets/facebook.svg";
 import Image from "next/image";
+import Logo from "../../Assets/Untitled.gif"
 import { useRouter } from "next/navigation";
 import { baseUrl } from "../../config/index";
 
@@ -203,8 +204,9 @@ const SignUp = () => {
           </p> */}
         </div>
       </div>
-      <div className="bg-[#081F5C] md:block hidden h-screen ">
-        <div role="tablist" className="tabs mt-6">
+      
+      <div className="bg-[#081F5C] md:flex hidden h-screen">
+        {/* <div role="tablist" className="tabs mt-6">
           <a role="tab" className="tab text-white">
             Home
           </a>
@@ -214,8 +216,20 @@ const SignUp = () => {
           <a role="tab" className="tab text-white">
             Pricing
           </a>
-        </div>
+        </div> */}
+
+        <Image
+          src={Logo}
+          alt="logo"
+          width="auto"
+          height="auto"
+          className="w-full m-auto"
+          // unoptimized={true}
+          priority={true}
+        />
+
       </div>
+      
     </div>
   );
 };

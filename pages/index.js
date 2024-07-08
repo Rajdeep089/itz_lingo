@@ -11,7 +11,7 @@ const inter = Inter({ subsets: ["latin"] });
 export default function Home() {
   return (
     <main
-      className={`${inter.className}`}
+      className={`${inter.className} relative`}
     >
       <Meta title="Itz Lingo" description="Crafted by ParindaTech Innovates" />
       <Navbar />

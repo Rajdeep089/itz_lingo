@@ -1,16 +1,18 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import GIcon from "../../Assets/google-color-icon.svg";
 import FIcon from "../../Assets/facebook.svg";
 import Image from "next/image";
+import Logo from "../../Assets/Untitled.gif"
 import { useRouter } from "next/navigation";
-import { baseUrl } from "../../config/index";
+import { baseUrl, fetchUserData } from "../../config/index";
 
 const SignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState(false);
+  const [loginData, setLoginData] = useState({});
 
   const router = useRouter();
 
@@ -18,43 +20,40 @@ const SignIn = () => {
     try {
       const response = await axios.post(
         `${baseUrl}/v1/auth/login`,
-        {
-          email: email,
-          password: password,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+        { email, password },
+        { headers: { "Content-Type": "application/json" } }
       );
 
-      // Handle success
-      console.log("Response:", response.data);
-      const { token } = response.data;
-      const { id } = response.data.data;
-      const { name } = response.data.data;
-      console.log(id);
-      localStorage.setItem("token", token);
-      localStorage.setItem("userId", id);
-      localStorage.setItem("name", name);
-      localStorage.setItem("email", email);
-      setLoginError(false);
-      router.push('/');
+      // console.log("Response:", response.data);
+
+      if (response.data) {
+        const { token, data } = response.data;
+        const { id, name } = data;
+
+        localStorage.setItem("token", token);
+        localStorage.setItem("userId", id);
+        localStorage.setItem("name", name);
+        localStorage.setItem("email", email);
+
+        // Fetch user data and store it in localStorage
+        await fetchUserData(token);
+
+        setLoginError(false);
+        router.push("/");
+      }
     } catch (error) {
       console.log(error);
-      setLoginError(error);
+      setLoginError(true);
     }
   };
-
-  
-
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 w-full">
       <div className="">
         <div className="grid grid-cols-1 w-[80%] mx-auto md:my-10 my-20 md:h-[80%] gap-2">
-          <h1 className="text-3xl font-semibold mb-6 text-center md:text-left">Log In</h1>
+          <h1 className="text-3xl font-semibold mb-6 text-center md:text-left">
+            Log In
+          </h1>
           <label className="input input-bordered flex items-center gap-2">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -65,7 +64,13 @@ const SignIn = () => {
               <path d="M2.5 3A1.5 1.5 0 0 0 1 4.5v.793c.026.009.051.02.076.032L7.674 8.51c.206.1.446.1.652 0l6.598-3.185A.755.755 0 0 1 15 5.293V4.5A1.5 1.5 0 0 0 13.5 3h-11Z" />
               <path d="M15 6.954 8.978 9.86a2.25 2.25 0 0 1-1.956 0L1 6.954V11.5A1.5 1.5 0 0 0 2.5 13h11a1.5 1.5 0 0 0 1.5-1.5V6.954Z" />
             </svg>
-            <input type="text" className="grow" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <input
+              type="text"
+              className="grow"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </label>
           <label className="input input-bordered flex items-center gap-2">
             <svg
@@ -108,39 +113,74 @@ const SignIn = () => {
               />
             </svg>
           </label>
-          <button onClick={login} className="btn btn-success text-white md:w-1/4 w-full mx-auto bg-[#081F5C]">
+          <button
+            onClick={login}
+            className="btn btn-success text-white md:w-1/4 w-full mx-auto bg-[#081F5C]"
+          >
             Log In
           </button>
           {loginError && (
-              <div
-                id="loginError"
-                className="alert alert-error shadow-lg mt-6"
-              >
-                Incorrect email or password!
-              </div>
-            )}
+            <div id="loginError" className="alert alert-error shadow-lg mt-6">
+              Incorrect email or password!
+            </div>
+          )}
           <p className="text-end font-semibold hover:underline hover:cursor-pointer">
             Forgot Password?
           </p>
           <div className="divider">OR</div>
-            <button className="btn btn-bordered md:w-1/2 w-full mx-auto">
-             <Image src={GIcon} alt="GIcon" width="auto" height="auto" className="w-5 h-5"/>
-              <span className="ml-2">Continue with Google</span>
-            </button>
-            <button className="btn btn-bordered md:w-1/2 w-full mx-auto">
-             <Image src={FIcon} alt="GIcon" width="auto" height="auto" className="w-5 h-5"/>
-              <span className="ml-2">Continue with Facebook</span>
-            </button>
-          <p className="text-center text-gray-500">Don't have an account? <span className="text-yellow-500 font-bold hover:cursor-pointer" onClick={() => router.push("/signup")}>Sign Up</span></p>
+          <button className="btn btn-bordered md:w-1/2 w-full mx-auto">
+            <Image
+              src={GIcon}
+              alt="GIcon"
+              width="auto"
+              height="auto"
+              className="w-5 h-5"
+            />
+            <span className="ml-2">Continue with Google</span>
+          </button>
+          <button className="btn btn-bordered md:w-1/2 w-full mx-auto">
+            <Image
+              src={FIcon}
+              alt="GIcon"
+              width="auto"
+              height="auto"
+              className="w-5 h-5"
+            />
+            <span className="ml-2">Continue with Facebook</span>
+          </button>
+          <p className="text-center text-gray-500">
+            Don't have an account?{" "}
+            <span
+              className="text-yellow-500 font-bold hover:cursor-pointer"
+              onClick={() => router.push("/signup")}
+            >
+              Sign Up
+            </span>
+          </p>
         </div>
       </div>
-      <div className="bg-[#081F5C] md:block hidden h-screen ">
-      <div role="tablist" className="tabs mt-6">
-  <a role="tab" className="tab text-white">Home</a>
-  <a role="tab" className="tab tab-active text-white">About Us</a>
-  <a role="tab" className="tab text-white">Pricing</a>
-</div>
-      
+      <div className="bg-[#081F5C] md:flex hidden h-screen">
+        {/* <div role="tablist" className="tabs mt-6">
+          <a role="tab" className="tab text-white">
+            Home
+          </a>
+          <a role="tab" className="tab tab-active text-white">
+            About Us
+          </a>
+          <a role="tab" className="tab text-white">
+            Pricing
+          </a>
+        </div> */}
+
+        <Image
+          src={Logo}
+          alt="logo"
+          width="auto"
+          height="auto"
+          className="w-full m-auto"
+          unoptimized={true}
+        />
+
       </div>
     </div>
   );

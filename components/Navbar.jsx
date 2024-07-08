@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Logo from "../Assets/logo.png";
@@ -15,17 +15,22 @@ const Navbar = () => {
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     setToken(storedToken);
-  }, []);
-
-  useEffect(() => {
-    if (token) {
+    if (storedToken) {
       setUserData({
         name: localStorage.getItem("name") || "",
         email: localStorage.getItem("email") || "",
-        profilePhoto: localStorage.getItem("profilePhoto") || "https://img.freepik.com/free-vector/user-circles-set_78370-4704.jpg?w=740&t=st=1717239089~exp=1717239689~hmac=a9d545fd4d72cf1418c9d0085aa91c7f6c60bd4d8e2fe84d5dd5a94e2350dc4d",
+        profilePhoto: localStorage.getItem("profilePhoto") || "",
       });
     }
-  }, [token]);
+  }, []);
+
+  // useEffect(() => {
+  //   if (token) {
+      
+  //   }
+  // }, [token]);
+
+  const pic = userData.profilePhoto;
 
 
 
@@ -51,7 +56,7 @@ const Navbar = () => {
           </div>
           <ul
             tabIndex={0}
-            className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52"
+            className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-black/90 text-white rounded-box w-52 divide-y"
           >
             <li>
               <Link href={"/about"}>About Us</Link>
@@ -101,15 +106,18 @@ const Navbar = () => {
             >
               <div className="w-16 rounded-full">
                 <img
-                  alt="Tailwind CSS Navbar component"
-                  loading="lazy"
-                  src={userData.profilePhoto}
+                  src={pic}
+                  className="w-auto h-auto"
+                  alt="Avatar"
+                  priority="true"
+                  width={64}
+                  height={64}
                 />
               </div>
             </div>
             <ul
               tabIndex={0}
-              className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow md:bg-gradient-to-b md:from-[#000000]/70 bg-black text-white rounded-box md:w-80 w-[96vw] divide-y"
+              className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow md:bg-black/80 bg-black/90 text-white rounded-box md:w-80 w-[96vw] divide-y"
             >
               <li>
                 <a className="justify-between">
@@ -134,17 +142,17 @@ const Navbar = () => {
                 <Link href={"/edit-profile"}>Edit Profile</Link>
               </li>
               <li>
-                <a>Check Your Level</a>
+                <Link href={"/test"}>Check Your Level</Link>
               </li>
               <li>
-                <a>Manage Subscription</a>
+                <Link href={"/subscription"}>Manage Subscription</Link>
               </li>
-              <li>
+              {/* <li>
                 <a>Preferences</a>
               </li>
               <li>
                 <a>Settings</a>
-              </li>
+              </li> */}
               <li>
                 <a
                   onClick={() => {
