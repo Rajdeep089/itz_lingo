@@ -36,7 +36,7 @@ const UserSection = () => {
         },
       });
       alert(response.data.message);
-      // setSend(true);
+      getUserList();
     } catch (error) {
       console.error(error);
     }
