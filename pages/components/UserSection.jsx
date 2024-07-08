@@ -68,8 +68,13 @@ const UserSection = () => {
               </div>
               {isLoggedIn && (
                 <button
-                  disabled={user.status === "i" ? true : false}
-                  onClick={(e) => sendRequest(e, user.id)}
+                  disabled={user.status === "i"  ? true : false}
+                  onClick={(e) => {
+                    if (user.status === "i") return;
+                    if (user.status === "c") return;
+                    if (user.status === "a") return;
+                    sendRequest(e, user.id)
+                  }}
                   className={`btn btn-xs rounded-3xl absolute right-0 top-0 ${
                     user.status === "i"
                       ? "btn-disabled"

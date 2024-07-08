@@ -62,7 +62,7 @@ const Navbar = () => {
               <Link href={"/about"}>About Us</Link>
             </li>
             <li>
-              <Link href={"/resources"}>Resources</Link>
+              <Link href={token ? "/resources" : "/login"}>Resources</Link>
             </li>
             <li>
               <Link href={"/pricing"}>Pricing</Link>
@@ -83,16 +83,16 @@ const Navbar = () => {
             <Link href={"/about"}>About Us</Link>
           </li>
           <li>
-            <Link href={"/resources"}>Resources</Link>
+            <Link href={token ? "/resources" : "/signin"}>Resources</Link>
           </li>
           <li>
-            <Link href={"/pricing"}>Pricing</Link>
+            <Link href={token ? "/pricing" : "/signin"}>Pricing</Link>
           </li>
           <li>
-            <Link href={"/test"}>Test</Link>
+            <Link href={token ? "/test" : "/signin"}>Test</Link>
           </li>
           <li>
-            <Link href={"/subscription"}>Subscription</Link>
+            <Link href={token ? "/subscription" : "/signin"}>Subscription</Link>
           </li>
         </ul>
       </div>

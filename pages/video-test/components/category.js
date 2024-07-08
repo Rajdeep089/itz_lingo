@@ -12,22 +12,25 @@ const CategoryComponent = ({
   const [apiCategory, setApiCategory] = useState("");
 
   useEffect(() => {
-    if (category === "stories") {
-      setApiCategory("stories");
-    } else if (category === "vocabulary") {
-      setApiCategory("vocabulary");
-    } else if (category === "roleplay") {
-      setApiCategory("roleplay");
-    } else if (category === "describeMe") {
-      setApiCategory("describeme");
-    } else if (category === "conversations") {
-      setApiCategory("conversations");
-    } else if (category === "phrases") {
-      setApiCategory("phrases");
+    if (category) {
+      if (category === "stories") {
+        setApiCategory("stories");
+      } else if (category === "vocabulary") {
+        setApiCategory("vocabulary");
+      } else if (category === "roleplay") {
+        setApiCategory("roleplay");
+      } else if (category === "describeMe") {
+        setApiCategory("describeme");
+      } else if (category === "conversations") {
+        setApiCategory("conversations");
+      } else if (category === "phrases") {
+        setApiCategory("phrases");
+      }
     }
   }, [category]);
 
   const getData = async () => {
+    if (!apiCategory) return; // Don't make the API call if apiCategory is empty
     try {
       const response = await axios.get(`${baseUrl}/v1/${apiCategory}/title`, {
         headers: {
@@ -43,6 +46,10 @@ const CategoryComponent = ({
   useEffect(() => {
     getData();
   }, [apiCategory]);
+
+  if (!category) {
+    return null; // Or return some placeholder content
+  }
 
   return (
     <div className="absolute top-0 left-0 w-full h-full bg-white z-40 scroll-smooth overflow-auto" ref={(el) => el && el.scrollTop === 0 && el.scrollTo(0, 0)}>
