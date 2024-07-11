@@ -6,7 +6,7 @@ import { baseUrl } from '@/config';
 const UserSection = () => {
   const [userList, setUserList] = useState([]);
   const [token, setToken] = useState(null);
-  const [send, setSend] = useState(false);
+  // const [send, setSend] = useState(false);
 
   const getUserList = async () => {
     try {
@@ -25,7 +25,7 @@ const UserSection = () => {
       console.error(error);
     }
   };
-  console.log(userList);
+  // console.log(userList);
 
   const sendRequest = async (e, id) => {
     e.preventDefault();

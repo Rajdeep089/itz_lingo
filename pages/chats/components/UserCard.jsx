@@ -1,6 +1,6 @@
 import React from 'react';
 
-const UserCard = ({ users, setConvoId }) => {
+const UserCard = ({ users, setConvoId, unreadCount }) => {
   // Check if users is undefined or null
   if (!users) {
     return null; // Or return some placeholder content
@@ -17,6 +17,8 @@ const UserCard = ({ users, setConvoId }) => {
     });
   };
 
+  console.log(unreadCount);
+
   return (
     <div onClick={handleClick} className="card card-side bg-base-100 shadow-xl p-2 gap-2 cursor-pointer">
       <div className="avatar">
@@ -26,8 +28,11 @@ const UserCard = ({ users, setConvoId }) => {
       </div>
       <div className='flex flex-row justify-between items-start w-full'>
         <div>
-          <h2 className="font-bold text-lg">{user.user?.name || 'Unknown User'}</h2>
-          <p>Last Message</p>
+          <h2 className={`text-lg ${unreadCount > 0 ? 'font-bold' : ''}`}>
+            {user.user?.name || 'Unknown User'}
+            {unreadCount > 0 && <span className="ml-2 badge badge-primary badge-sm">{unreadCount}</span>}
+          </h2>
+          <p className={unreadCount > 0 ? 'font-semibold' : ''}>Last Message</p>
         </div>
         <p className="text-xs opacity-50 text-end mt-1">time</p>
       </div>

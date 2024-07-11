@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { useRouter } from 'next/router';
+// import { useRouter } from 'next/router';
 import { useSocket } from "../../context/SocketProvider";
 import { baseUrl } from "@/config";
 import axios from "axios";
@@ -7,6 +7,7 @@ import UserCard from "./components/UserCard";
 import {useSocketHandlers} from "../../config/socket";
 import Image from "next/image";
 import Msg from "../../Assets/msg.jpg";
+import { debounce } from 'lodash';
 
 const Chats = () => {
   const [users, setUsers] = useState([]);
@@ -20,11 +21,10 @@ const Chats = () => {
   const [name, setName] = useState(null);
   const [chat, setChat] = useState(null);
   const [rid, setRid] = useState(null);
-  const [callData, setCallData] = useState(null);
   const [userList, setUserList] = useState([]);
   const [requests, setRequests] = useState([]);
+  const [unreadCounts, setUnreadCounts] = useState({});
   const chatEndRef = useRef(null);
-  const router = useRouter();
 
   const { socket } = useSocket();
   const {
@@ -45,43 +45,40 @@ const Chats = () => {
     setName(storedName);
   }, []);
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      if (token) {
-        try {
-          const response = await axios.get(`${baseUrl}/v1/user/friends`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          setUsers(response.data.data.friends);
-          setUnreadMsgs(response.data.data.unreadCount);
-        } catch (error) {
-          console.error(error);
-        }
-      }
-    };
-
-    const getUserList = async () => {
+  const fetchUsers = async () => {
+    if (token) {
       try {
-        const response = await axios.get(`${baseUrl}/v1/user/list`, {
+        const response = await axios.get(`${baseUrl}/v1/user/friends`, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${token}`,
           },
         });
-        setUserList(response.data.data);
+        setUsers(response.data.data.friends);
+        setUnreadMsgs(response.data.data.unreadCount);
       } catch (error) {
         console.error(error);
-        throw error;
       }
-    };
+    }
+  };
 
-    
-    
+  const getUserList = async () => {
+    try {
+      const response = await axios.get(`${baseUrl}/v1/user/list`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      setUserList(response.data.data);
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+  useEffect(() => {
     getUserList();
     fetchUsers();
     pendingRequest();
-  }, [token]);
+  }, [token, userId, unreadMsgs]);
   
   const pendingRequest = async () => {
     try {
@@ -113,6 +110,8 @@ const Chats = () => {
       });
       document.getElementById("request-modal")?.close();
       pendingRequest();
+      fetchUsers();
+      getUserList();
       alert(response.data.message);
     } catch (error) {
       console.error(error);
@@ -158,7 +157,12 @@ const Chats = () => {
 
     const handleNewMessage = (newMessage) => {
       setMessages((prevMessages) => [...prevMessages, newMessage]);
-      console.log(messages)
+      if (newMessage.senderId !== userId && newMessage.senderId !== convoId?.userId) {
+        setUnreadCounts((prevCounts) => ({
+          ...prevCounts,
+          [newMessage.senderId]: (prevCounts[newMessage.senderId] || 0) + 1
+        }));
+      }
     };
 
     if (convoId) {
@@ -170,12 +174,28 @@ const Chats = () => {
         socket.off("message", handleNewMessage);
       }
     };
-  }, [convoId, token]);
+  }, [convoId, token, userId]);
 
   useEffect(() => {
-    if (chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+    if (convoId) {
+      setUnreadCounts(prevCounts => ({
+        ...prevCounts,
+        [convoId.userId]: 0
+      }));
     }
+  }, [convoId]);
+
+  const debouncedScroll = useCallback(
+    debounce(() => {
+      if (chatEndRef.current) {
+        chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+      }
+    }, 100),
+    []
+  );
+  
+  useEffect(() => {
+    debouncedScroll();
   }, [messages]);
 
   const handleSendMessage = (text) => {
@@ -221,66 +241,9 @@ useEffect(() => {
     }
   };
 
-  let callerName = "";
-  useEffect(() => {
-    const handleIncomingData = (data) => {
-      if (!callData) {
-        if (data) {
-          setCallData(data);
-          callerName = data?.name ? data?.name : "";
-          document.getElementById("incoming-modal")?.showModal();
-        } else {
-          console.error("Invalid incoming call data: ", data);
-        }
-      }
-    }
-
-
-    if (socket) {
-      socket.on("incoming-popup", (data) => {
-        handleIncomingData(data);
-        console.log(data);
-      });
-    }
-  }, [socket]);
-
-  const acceptCall = () => {
-    router.push(`/video-test?to=${null}&from=${callData.callId}&name=${callData.name}`);
-    localStorage.setItem("caller", "false");
-  };
-
-  const rejectCall = () => {
-    document.getElementById("incoming-modal")?.close();
-    console.log("reject call", callData?.callId);
-    if (callData?.callId) {
-      socket.emit("reject-call", 
-        {callId: callData?.callId}
-      );
-    }
-  }
-
   return (
     <div className="transition-all duration-300 ease-in-out">
-      <dialog
-        id="incoming-modal"
-        className="modal modal-bottom sm:modal-middle"
-      >
-        <div className="modal-box">
-          <h3 className="font-bold text-lg">Incoming Call</h3>
-          <p className="py-4">{callerName} is calling. . .</p>
-          <div className="modal-action">
-            <form method="dialog">
-              {/* if there is a button in form, it will close the modal */}
-              <label onClick={acceptCall} className="btn btn-success">
-                Accept
-              </label>
-              <label onClick={rejectCall} className="btn btn-error">
-                Decline
-              </label>
-            </form>
-          </div>
-        </div>
-      </dialog>
+      
       <div className="drawer">
         <input id="my-drawer" type="checkbox" className="drawer-toggle" />
         <div className="drawer-content relative h-screen">
@@ -583,13 +546,24 @@ useEffect(() => {
             />
 
             <div className="flex flex-col gap-2 bg-base-300 py-3 px-1 rounded-xl">
-              {users && users.length > 0 ? (
-                users.map((user, index) => (
-                  <UserCard key={index} users={user} setConvoId={setConvoId} />
-                ))
-              ) : (
-                <p>No friends found.</p>
-              )}
+            {users && users.length > 0 ? (
+  users.map((user, index) => (
+    <UserCard 
+      key={index} 
+      users={user} 
+      setConvoId={(selectedUser) => {
+        setConvoId(selectedUser);
+        setUnreadCounts((prevCounts) => ({
+          ...prevCounts,
+          [selectedUser.userId]: 0
+        }));
+      }}
+      unreadCount={unreadCounts[user.userId] || 0}
+    />
+  ))
+) : (
+  <p>No friends found.</p>
+)}
             </div>
           </div>
         </div>
