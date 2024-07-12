@@ -55,6 +55,13 @@ const Chats = () => {
         });
         setUsers(response.data.data.friends);
         setUnreadMsgs(response.data.data.unreadCount);
+  
+        // Create an object with user IDs as keys and their unread message counts as values
+        const unreadCountsObj = response.data.data.friends.reduce((acc, friend) => {
+          acc[friend.user.id] = friend.unreadMessageCount;
+          return acc;
+        }, {});
+        setUnreadCounts(unreadCountsObj);
       } catch (error) {
         console.error(error);
       }
@@ -175,6 +182,23 @@ const Chats = () => {
       }
     };
   }, [convoId, token, userId]);
+
+  const handleConvoSelect = (selectedUser) => {
+    setConvoId(selectedUser);
+    setUnreadCounts((prevCounts) => ({
+      ...prevCounts,
+      [selectedUser.userId]: 0
+    }));
+    
+    // Update the users state to reflect the change in unread count
+    setUsers((prevUsers) => 
+      prevUsers.map((user) => 
+        user.user.id === selectedUser.userId 
+          ? { ...user, unreadMessageCount: 0 }
+          : user
+      )
+    );
+  };
 
   useEffect(() => {
     if (convoId) {
@@ -551,14 +575,8 @@ useEffect(() => {
     <UserCard 
       key={index} 
       users={user} 
-      setConvoId={(selectedUser) => {
-        setConvoId(selectedUser);
-        setUnreadCounts((prevCounts) => ({
-          ...prevCounts,
-          [selectedUser.userId]: 0
-        }));
-      }}
-      unreadCount={unreadCounts[user.userId] || 0}
+      setConvoId={handleConvoSelect}
+      unreadCount={user.unreadMessageCount}
     />
   ))
 ) : (

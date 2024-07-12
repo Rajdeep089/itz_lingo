@@ -1,11 +1,6 @@
 import React from 'react';
 
 const UserCard = ({ users, setConvoId, unreadCount }) => {
-  // Check if users is undefined or null
-  if (!users) {
-    return null; // Or return some placeholder content
-  }
-
   const user = users;
 
   const handleClick = () => {
@@ -16,8 +11,6 @@ const UserCard = ({ users, setConvoId, unreadCount }) => {
       photo: user.profilePhoto || "https://img.freepik.com/free-vector/user-circles-set_78370-4704.jpg?w=740&t=st=1717239089~exp=1717239689~hmac=a9d545fd4d72cf1418c9d0085aa91c7f6c60bd4d8e2fe84d5dd5a94e2350dc4d",
     });
   };
-
-  console.log(unreadCount);
 
   return (
     <div onClick={handleClick} className="card card-side bg-base-100 shadow-xl p-2 gap-2 cursor-pointer">
@@ -32,9 +25,13 @@ const UserCard = ({ users, setConvoId, unreadCount }) => {
             {user.user?.name || 'Unknown User'}
             {unreadCount > 0 && <span className="ml-2 badge badge-primary badge-sm">{unreadCount}</span>}
           </h2>
-          <p className={unreadCount > 0 ? 'font-semibold' : ''}>Last Message</p>
+          <p className={unreadCount > 0 ? 'font-semibold' : ''}>
+            {user.message ? user.message.content : 'No messages yet'}
+          </p>
         </div>
-        <p className="text-xs opacity-50 text-end mt-1">time</p>
+        <p className="text-xs opacity-50 text-end mt-1">
+          {user.message ? new Date(user.message.createdAt).toLocaleTimeString() : ''}
+        </p>
       </div>
     </div>
   );
