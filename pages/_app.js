@@ -11,7 +11,8 @@ function SocketHandler({ children }) {
   const { socket } = useSocket();
   const [callData, setCallData] = useState(null);
   const router = useRouter();
-  const { setHasNewMessage } = useNotification();
+  const { setHasNewMessage, setLastMessageSenderId } = useNotification();
+  
 
   useEffect(() => {
     const handleIncomingData = (data) => {
@@ -32,9 +33,9 @@ function SocketHandler({ children }) {
       });
 
       socket.on('message', (newMessage) => {
-        // Check if the message is for the current user
         if (newMessage.receiverId === localStorage.getItem('userId')) {
           setHasNewMessage(true);
+          setLastMessageSenderId(newMessage.senderId);
         }
       });
     }
@@ -45,7 +46,7 @@ function SocketHandler({ children }) {
         socket.off('message');
       }
     };
-  }, [socket, callData, setHasNewMessage]);
+  }, [socket, callData, setHasNewMessage, setLastMessageSenderId]);
 
   const acceptCall = () => {
     router.push(`/video-test?to=${null}&from=${callData.callId}&name=${callData.name}`);

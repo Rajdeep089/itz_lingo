@@ -5,13 +5,14 @@ import { useNotification } from '../context/NotificationContext';
 
 const NotificationIcon = () => {
   const router = useRouter();
-  const { hasNewMessage, setHasNewMessage } = useNotification();
+  const { hasNewMessage, setHasNewMessage, lastMessageSenderId } = useNotification();
 
-  if (!hasNewMessage) return null;
+  // Don't show the icon if we're already on the chats page
+  if (router.pathname === '/chats' || !hasNewMessage) return null;
 
   const handleClick = () => {
     setHasNewMessage(false);
-    router.push('/chats');
+    router.push(`/chats?openUser=${lastMessageSenderId}`);
   };
 
   return (

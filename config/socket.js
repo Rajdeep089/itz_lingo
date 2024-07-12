@@ -19,7 +19,7 @@ export const useSocketHandlers = () => {
 
     socket.on("message", (message) => {
       callback(message);
-      console.log(message);
+      // console.log(message);
     });
   };
 
