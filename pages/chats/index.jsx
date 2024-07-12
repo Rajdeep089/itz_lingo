@@ -94,7 +94,7 @@ const Chats = () => {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-      console.log(response.data.data)
+      // console.log(response.data.data)
       setRequests(response.data.data);
     } catch (error) {
       console.error(error);
@@ -153,7 +153,7 @@ const Chats = () => {
             }
           );
           setMessages(response.data);
-          console.log(messages);
+          // console.log(messages);
         } catch (error) {
           console.error(error);
         }
@@ -495,8 +495,8 @@ useEffect(() => {
                 <h3 className="font-bold text-2xl mb-5">User List</h3>
                 {userList &&
                   userList.length > 0 &&
-                  userList.map((user) => (
-                    <div className="w-full flex flex-row justify-start items-center gap-4 relative my-2 border p-2 rounded-lg">
+                  userList.map((user, index) => (
+                    <div key={index} className="w-full flex flex-row justify-start items-center gap-4 relative my-2 border p-2 rounded-lg">
                       <img
                         src={
                           user.profilePhoto

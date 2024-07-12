@@ -41,6 +41,17 @@ const Resources = ({ onScroll }) => {
 
   const carouselRefs = useRef([]);
 
+  const scrollCarousel = (index, direction) => {
+    const carousel = carouselRefs.current[index];
+    if (carousel) {
+      const scrollAmount = 300; // Adjust this value as needed
+      carousel.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   const handleScroll = useCallback(
     index => {
       if (onScroll) {
@@ -68,26 +79,43 @@ const Resources = ({ onScroll }) => {
           <Link href={`/resources/${category.key}`} className="md:text-3xl text-xl my-10 mx-5 font-semibold">
             {category.label}
           </Link>
-          <div
-            ref={el => (carouselRefs.current[index] = el)}
-            onScroll={() => handleScroll(index)}
-            className="carousel carousel-center p-4 space-x-4 bg-gray-200 rounded-box mx-5"
-          >
-            {resources[category.key].map(item => (
-              <Link href={`/resources/${category.key}/${item.id}`} key={item.id} className="carousel-item">
-                <div className="relative">
-                  <img src={item.imageUrl} className="rounded-box w-[300px]" alt={item.title} />
-                  <div className="absolute bottom-0 text-white p-5">
-                    <p className="text-xl font-semibold my-1">{item.title}</p>
+          <div className="relative mx-5">
+            <button 
+              onClick={() => scrollCarousel(index, 'left')}
+              className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 hover:bg-opacity-75 rounded-full p-2 z-10"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+              </svg>
+            </button>
+            <div
+              ref={el => (carouselRefs.current[index] = el)}
+              onScroll={() => handleScroll(index)}
+              className="carousel carousel-center p-4 space-x-4 bg-gray-200 rounded-box"
+            >
+              {resources[category.key].map(item => (
+                <Link href={`/resources/${category.key}/${item.id}`} key={item.id} className="carousel-item">
+                  <div className="relative">
+                    <img src={item.imageUrl} className="rounded-box w-[300px]" alt={item.title} />
+                    <div className="absolute bottom-0 text-white p-5">
+                      <p className="text-xl font-semibold my-1">{item.title}</p>
+                    </div>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              ))}
+            </div>
+            <button 
+              onClick={() => scrollCarousel(index, 'right')}
+              className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 hover:bg-opacity-75 rounded-full p-2 z-10"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </button>
           </div>
         </div>
       ))}
     </div>
   );
 };
-
 export default Resources;
