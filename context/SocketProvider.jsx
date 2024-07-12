@@ -11,11 +11,13 @@ export const useSocket = () => {
 const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const [socketId, setSocketId] = useState(null);
+  const [token, setToken] = useState(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const storedToken = localStorage.getItem("token");
+    setToken(storedToken);
 
-    if (token) {
+    if (token && !socket) {
       const newSocket = io(baseUrl, {
         auth: {
           token: `Bearer ${token}`,
@@ -34,13 +36,13 @@ const SocketProvider = ({ children }) => {
       setSocket(newSocket);
 
       // Clean up function to disconnect the socket when the component unmounts
-      return () => {
-        if (newSocket) {
-          newSocket.disconnect();
-        }
-      };
+      // return () => {
+      //   if (newSocket) {
+      //     newSocket.disconnect();
+      //   }
+      // };
     }
-  }, []); // Empty dependency array to run only once on mount
+  }, [socket, token]); // Empty dependency array to run only once on mount
 
   return (
     <SocketContext.Provider value={{ socket, socketId }}>
