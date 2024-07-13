@@ -9,10 +9,12 @@ const Card = () => {
   const { id } = router.query;
 
     const [data, setData] = useState({})
+    const [loading, setLoading] = useState(true);
 
     const getData = async () => {
       if (!id) return;
       try {
+        setLoading(true);
         const response = await axios.get(`${baseUrl}/v1/roleplay/${id}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -22,12 +24,22 @@ const Card = () => {
       } catch (error) {
         console.error(error);
         throw error;
+      } finally {
+        setLoading(false);
       }
     };
 
     useEffect(() => {
       getData();
     }, [id]);
+
+    if (loading) {
+      return (
+        <div className="flex justify-center items-center h-screen">
+          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
+        </div>
+      );
+    }
 
     
   return (

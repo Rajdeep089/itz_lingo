@@ -3,11 +3,25 @@ import axios from 'axios';
 import { baseUrl } from '@/config';
 import Link from 'next/link';
 
+
+const VocabularySkeleton = () => (
+  <div className="flex justify-center items-center animate-pulse">
+    <div className="relative">
+      <div className="rounded-box w-[320px] h-[200px] bg-gray-300"></div>
+      <div className="absolute bottom-0 w-full p-5">
+        <div className="h-6 bg-gray-400 rounded w-3/4"></div>
+      </div>
+    </div>
+  </div>
+);
+
 const Vocabulary = () => {
 
   const [data, setData] = useState([])
+  const [isLoading, setIsLoading] = useState(true);
 
   const getData = async () => {
+    setIsLoading(true);
     try {
       const response = await axios.get(`${baseUrl}/v1/vocabulary/title`, {
         headers: {
@@ -18,6 +32,8 @@ const Vocabulary = () => {
     } catch (error) {
       console.error(error);
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -29,7 +45,13 @@ const Vocabulary = () => {
     <div className="mb-10">
     <h1 className="md:text-5xl text-3xl my-10 mx-5 font-semibold">Vocabulary</h1>
     <div className='grid grid-cols-4 gap-4 '>
-      {data.map((item) => (
+    {isLoading ? (
+          // Show skeleton loaders while loading
+          Array(8).fill().map((_, index) => (
+            <VocabularySkeleton key={index} />
+          ))
+        ) : (
+      data.map((item) => (
       <Link href={`/resources/vocabulary/${item.id}`} key={item.id} className="flex justify-center items-center">
                 <div className="relative">
                   <img src={item.imageUrl} className="rounded-box w-[320px]" alt={item.title} />
@@ -38,7 +60,8 @@ const Vocabulary = () => {
                   </div>
                 </div>
               </Link>
-    ))}
+    ))
+    )}
     </div>
     </div>
   )

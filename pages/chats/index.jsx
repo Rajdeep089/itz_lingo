@@ -60,6 +60,7 @@ const Chats = () => {
 
   const fetchUsers = async () => {
     if (token) {
+      setUsersLoading(true);
       try {
         const response = await axios.get(`${baseUrl}/v1/user/friends`, {
           headers: {
@@ -80,11 +81,15 @@ const Chats = () => {
         setUnreadCounts(unreadCountsObj);
       } catch (error) {
         console.error(error);
+      } finally {
+        setUsersLoading(false);
       }
     }
   };
 
   const getUserList = async () => {
+    if (!token) return;
+    setUserListLoading(true);
     try {
       const response = await axios.get(`${baseUrl}/v1/user/list`, {
         headers: {
@@ -95,21 +100,38 @@ const Chats = () => {
     } catch (error) {
       console.error(error);
       throw error;
+    } finally {
+      setUserListLoading(false);
     }
   };
+  // const [isLoading, setIsLoading] = useState(true);
+  const [usersLoading, setUsersLoading] = useState(true);
+  const [userListLoading, setUserListLoading] = useState(true);
+  const [requestsLoading, setRequestsLoading] = useState(true);
+  
   useEffect(() => {
-    getUserList();
-    pendingRequest();
-    const fetchData = async () => {
+    const fetchAllData = async () => {
       setIsLoading(true);
-      await fetchUsers();
-      setIsLoading(false);
+      try {
+        await Promise.all([
+          fetchUsers(),
+          getUserList(),
+          pendingRequest()
+        ]);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
-
-    fetchData();
-  }, [token, userId, unreadMsgs]);
+  
+    if (token && userId) {
+      fetchAllData();
+    }
+  }, [token, userId]);
 
   const pendingRequest = async () => {
+    setRequestsLoading(true);
     try {
       const response = await axios.get(
         `${baseUrl}/v1/user/connection-requests`,
@@ -124,6 +146,8 @@ const Chats = () => {
     } catch (error) {
       console.error(error);
       throw error;
+    } finally {
+      setRequestsLoading(false);
     }
   };
 
@@ -264,6 +288,7 @@ const Chats = () => {
   }, [latestMessage, convoId, userId]);
 
   const handleConvoSelect = (selectedUser) => {
+    console.log(selectedUser);
     setConvoId(selectedUser);
     setUsers((prevUsers) =>
       prevUsers.map((user) =>
@@ -471,7 +496,7 @@ const Chats = () => {
                             src={
                               message.senderId === userId
                                 ? photo
-                                : convoId.photo
+                                : convoId?.photo
                             }
                           />
                         </div>

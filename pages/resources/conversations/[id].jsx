@@ -9,10 +9,12 @@ const Card = () => {
   const { id } = router.query;
 
   const [data, setData] = useState({});
+  const [loading, setLoading] = useState(true);
 
   const getData = async () => {
     if (!id) return;
     try {
+      setLoading(true);
       const response = await axios.get(`${baseUrl}/v1/conversations/${id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -22,6 +24,8 @@ const Card = () => {
     } catch (error) {
       console.error(error);
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -29,7 +33,13 @@ const Card = () => {
     getData();
   }, [id]);
 
-  // console.log(data);
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="m-5 py-4 rounded-xl shadow-xl">
@@ -40,7 +50,7 @@ const Card = () => {
         alt="image"
         className="rounded-xl md:w-2/3 mx-auto shadow-xl"
       />
-       <div className="divider md:w-2/3 md:mx-auto mx-2"></div>
+      <div className="divider md:w-2/3 md:mx-auto mx-2"></div>
       <div className="md:w-2/3 md:mx-auto rounded-xl shadow-xl">
         {data.conversation && data.conversation.map((item, index) => (
           <div key={index} className={`chat  ${item.speaker === "Person A" ? "chat-start" : "chat-end"}`}>

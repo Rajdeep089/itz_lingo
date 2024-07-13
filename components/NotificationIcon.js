@@ -12,7 +12,8 @@ const NotificationIcon = () => {
 
   const handleClick = () => {
     setHasNewMessage(false);
-    router.push(`/chats?openUser=${lastMessageSenderId}`);
+    router.push(`/chats`);
+    console.log(lastMessageSenderId);
   };
 
   return (
