@@ -1,20 +1,37 @@
-"use client";
-import React, { createContext, useState, useContext } from 'react';
+// AuthContext.js
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
+
+export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [token, setToken] = useState(null);
 
-  const setAuthToken = (newToken) => {
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) {
+      setToken(storedToken);
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  const login = (newToken) => {
     setToken(newToken);
+    setIsAuthenticated(true);
+    localStorage.setItem("token", newToken);
+  };
+
+  const logout = () => {
+    setToken(null);
+    setIsAuthenticated(false);
+    localStorage.removeItem("token");
   };
 
   return (
-    <AuthContext.Provider value={{ token, setAuthToken }}>
+    <AuthContext.Provider value={{ isAuthenticated, token, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
-
-export const useAuth = () => useContext(AuthContext);

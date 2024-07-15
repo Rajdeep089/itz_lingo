@@ -6,6 +6,7 @@ import Image from "next/image";
 import Logo from "../../Assets/Untitled.gif"
 import { useRouter } from "next/navigation";
 import { baseUrl, fetchUserData } from "../../config/index";
+import { useAuth } from "@/config/AuthContext";
 
 const SignIn = () => {
   const [email, setEmail] = useState("");
@@ -16,7 +17,9 @@ const SignIn = () => {
 
   const router = useRouter();
 
-  const login = async () => {
+  const { login } = useAuth();
+
+  const loginUser = async () => {
     try {
       const response = await axios.post(
         `${baseUrl}/v1/auth/login`,
@@ -24,18 +27,16 @@ const SignIn = () => {
         { headers: { "Content-Type": "application/json" } }
       );
 
-      // console.log("Response:", response.data);
-
       if (response.data) {
         const { token, data } = response.data;
         const { id, name } = data;
 
-        localStorage.setItem("token", token);
+        login(token); // Use the login function from AuthContext
+
         localStorage.setItem("userId", id);
         localStorage.setItem("name", name);
         localStorage.setItem("email", email);
 
-        // Fetch user data and store it in localStorage
         await fetchUserData(token);
 
         setLoginError(false);
@@ -114,7 +115,7 @@ const SignIn = () => {
             </svg>
           </label>
           <button
-            onClick={login}
+            onClick={loginUser}
             className="btn btn-success text-white md:w-1/4 w-full mx-auto bg-[#081F5C]"
           >
             Log In

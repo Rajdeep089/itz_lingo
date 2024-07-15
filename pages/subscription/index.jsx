@@ -1,28 +1,49 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { baseUrl } from "@/config";
 
 const Subscription = () => {
+  const [data, setData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const [data, setData] = useState([])
+  useEffect(() => {
+    const getData = async () => {
+      setIsLoading(true);
+      try {
+        const response = await axios.get(`${baseUrl}/v1/payment`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        setData(response.data);
+        setError(null);
+      } catch (error) {
+        console.error(error);
+        setError("Failed to fetch subscription data");
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const getData = async () => {
-    try {
-      const response = await axios.get(`${baseUrl}/v1/payment`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      setData(response.data);
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  };
+    getData();
+  }, []);
 
-  getData();
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
 
-  // console.log(data);
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p className="text-red-500">{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -69,12 +90,6 @@ const Subscription = () => {
               <span className="text-gray-400">{data?.currentSubscription?.createdAt.slice(0, 10)}</span>
             </p>
             <p className="text-sm font-semibold">{data?.currentSubscription?.status.toUpperCase()}</p>
-            {/* <button className="btn absolute top-3 right-3 bg-[#081F5C] text-white hover:bg-white hover:text-[#081F5C] hover:border-[#081F5C]">
-              Cancel subscription
-            </button>
-            <button className="btn absolute bottom-3 right-3 btn-outline border-[#081F5C] text-[#081F5C] hover:bg-[#081F5C] hover:text-white">
-              Manage payments
-            </button> */}
           </div>
         </div>
         <div className="flex flex-col border border-gray-400 rounded-lg p-5">
@@ -82,17 +97,17 @@ const Subscription = () => {
             <p className="font-semibold text-lg">Purchase history</p>
           </div>
           <div className="flex flex-col gap-3 p-5 mx-20 relative border border-gray-400 rounded-lg">
-            {data?.history?.map((item) => (
-            <div>
-              <h1 className="font-semibold text-lg">{item.type.toUpperCase()}</h1>
-              <p className="text-sm flex  gap-x-2">
-              <span className="font-semibold">Purchase Date:</span>
-              <span className="text-gray-400">{item.createdAt.slice(0, 10)}</span>
-            </p>
-            <p className="text-sm font-semibold text-gray-400">{item.status.toUpperCase()}</p>
-              <p className="text-sm text-gray-400">{item.duration === 4 ? "Quarterly" : item.duration === 12 ? "Annually" : "Monthly"}</p>
-              <div className="divider"></div>
-            </div>
+            {data?.history?.map((item, index) => (
+              <div key={index}>
+                <h1 className="font-semibold text-lg">{item.type.toUpperCase()}</h1>
+                <p className="text-sm flex  gap-x-2">
+                  <span className="font-semibold">Purchase Date:</span>
+                  <span className="text-gray-400">{item.createdAt.slice(0, 10)}</span>
+                </p>
+                <p className="text-sm font-semibold text-gray-400">{item.status.toUpperCase()}</p>
+                <p className="text-sm text-gray-400">{item.duration === 4 ? "Quarterly" : item.duration === 12 ? "Annually" : "Monthly"}</p>
+                <div className="divider"></div>
+              </div>
             ))}
           </div>
         </div>

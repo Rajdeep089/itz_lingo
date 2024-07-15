@@ -5,8 +5,10 @@ import axios from "axios";
 
 const Annually = () =>  {
     const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true);
   
     const getData = async () => {
+      setLoading(true);
       try {
         const response = await axios.get(
           `${baseUrl}/v1/payment/plan?duration=monthly`,
@@ -20,6 +22,8 @@ const Annually = () =>  {
       } catch (error) {
         console.error(error);
         throw error;
+      } finally {
+        setLoading(false);
       }
     };
   
@@ -78,6 +82,14 @@ const Annually = () =>  {
         alert("Error initiating payment. Please try again.");
       }
     };
+
+    if (loading) {
+      return (
+        <div className="w-full h-[60vh] flex items-center justify-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-[#081F5C]"></div>
+        </div>
+      );
+    }
   
     return (
         <div className="w-full flex flex-row justify-center gap-5 px-5 md:my-5 my-3 h-[60vh] absolute bottom-0">

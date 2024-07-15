@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { io } from "socket.io-client";
 import { baseUrl } from "../config";
+import { useAuth } from '@/config/AuthContext';
 
 const SocketContext = createContext(null);
 
@@ -11,13 +12,12 @@ export const useSocket = () => {
 const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const [socketId, setSocketId] = useState(null);
-  const [token, setToken] = useState(null);
+  // const [token, setToken] = useState(null);
+
+  const { isAuthenticated, token } = useAuth();
 
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    setToken(storedToken);
-
-    if (token && !socket) {
+    if (isAuthenticated && token && !socket) {
       const newSocket = io(baseUrl, {
         auth: {
           token: `Bearer ${token}`,
@@ -35,14 +35,13 @@ const SocketProvider = ({ children }) => {
 
       setSocket(newSocket);
 
-      // Clean up function to disconnect the socket when the component unmounts
       // return () => {
       //   if (newSocket) {
       //     newSocket.disconnect();
       //   }
       // };
     }
-  }, [socket, token]); // Empty dependency array to run only once on mount
+  }, [isAuthenticated, token, socket]);
 
   return (
     <SocketContext.Provider value={{ socket, socketId }}>

@@ -9,6 +9,7 @@ import { useSocketHandlers } from "../../config/socket";
 import Image from "next/image";
 import Msg from "../../Assets/msg.jpg";
 import { debounce } from "lodash";
+import { useNotification } from "@/context/NotificationContext";
 
 const Chats = () => {
   const [users, setUsers] = useState([]);
@@ -36,6 +37,8 @@ const Chats = () => {
   const { subscribeToMessages, sendMessage, handleCallUser } =
     useSocketHandlers();
 
+  const { hasNewMessage, lastMessageSenderId  } = useNotification();
+
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     const storedUserId = localStorage.getItem("userId");
@@ -48,15 +51,40 @@ const Chats = () => {
     setName(storedName);
   }, []);
 
+  const userToOpenRef = useRef(null);
+
+  const handleConvoSelect = useCallback((selectedUser) => {
+    console.log(selectedUser);
+    setConvoId({
+      userId: selectedUser.userId || selectedUser.user.id,
+      convoId: selectedUser.conversationId ,
+      name: selectedUser.name || selectedUser.user.name,
+      photo: selectedUser.profilePhoto || "https://img.freepik.com/free-vector/user-circles-set_78370-4704.jpg?w=740&t=st=1717239089~exp=1717239689~hmac=a9d545fd4d72cf1418c9d0085aa91c7f6c60bd4d8e2fe84d5dd5a94e2350dc4d",
+    });
+    setUsers((prevUsers) =>
+      prevUsers.map((user) =>
+        user.user.id === selectedUser.userId
+          ? { ...user, unreadMessageCount: 0 }
+          : user
+      )
+    );
+    setUnreadCounts((prevCounts) => ({
+      ...prevCounts,
+      [selectedUser.userId]: 0,
+    }));
+  }, []);
+
   useEffect(() => {
-    if (openUser) {
-      const userToOpen = users.find((user) => user.user.id === openUser);
-      if (userToOpen) {
+    if (lastMessageSenderId && users.length > 0) {
+      const userToOpen = users.find((user) => user.user.id === lastMessageSenderId);
+      if (userToOpen && userToOpen !== userToOpenRef.current) {
+        userToOpenRef.current = userToOpen;
+        console.log(userToOpen);
         handleConvoSelect(userToOpen);
+        router.replace("/chats", undefined, { shallow: true });
       }
-      router.replace("/chats", undefined, { shallow: true });
     }
-  }, [openUser, users]);
+  }, [lastMessageSenderId, users, handleConvoSelect, router]);
 
   const fetchUsers = async () => {
     if (token) {
@@ -287,22 +315,7 @@ const Chats = () => {
     }
   }, [latestMessage, convoId, userId]);
 
-  const handleConvoSelect = (selectedUser) => {
-    console.log(selectedUser);
-    setConvoId(selectedUser);
-    setUsers((prevUsers) =>
-      prevUsers.map((user) =>
-        user.user.id === selectedUser.userId
-          ? { ...user, unreadMessageCount: 0 }
-          : user
-      )
-    );
-    setUnreadCounts((prevCounts) => ({
-      ...prevCounts,
-      [selectedUser.userId]: 0,
-    }));
-  };
-
+  
   useEffect(() => {
     if (convoId) {
       setUnreadCounts((prevCounts) => ({

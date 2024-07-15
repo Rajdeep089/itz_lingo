@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from 'next/router';
 import SocketProvider, { useSocket } from "@/context/SocketProvider";
+import { AuthProvider } from "@/config/AuthContext";
 import { NotificationProvider, useNotification } from '../context/NotificationContext';
 import NotificationIcon from '../components/NotificationIcon';
 import "@/styles/globals.css";
@@ -102,6 +103,7 @@ export default function App({ Component, pageProps }) {
         src="https://checkout.razorpay.com/v1/checkout.js"
         strategy="lazyOnload"
       />
+      <AuthProvider>
       <SocketProvider>
         <NotificationProvider>
           <SocketHandler>
@@ -110,6 +112,7 @@ export default function App({ Component, pageProps }) {
           </SocketHandler>
         </NotificationProvider>
       </SocketProvider>
+      </AuthProvider>
     </>
   );
 }

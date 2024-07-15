@@ -3,18 +3,20 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Logo from "../Assets/logo.png";
-// import { useUserData } from "../config";
 import { useRouter } from "next/navigation";
 
 const Navbar = () => {
   const router = useRouter();
-  // const allData = useUserData();
-  const [userData, setUserData] = useState({});
+  const [userData, setUserData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [token, setToken] = useState(null);
 
   useEffect(() => {
+    checkAuthStatus();
+  }, []);
+
+  const checkAuthStatus = () => {
     const storedToken = localStorage.getItem("token");
-    setToken(storedToken);
     if (storedToken) {
       setUserData({
         name: localStorage.getItem("name") || "",
@@ -22,17 +24,13 @@ const Navbar = () => {
         profilePhoto: localStorage.getItem("profilePhoto") || "",
       });
     }
-  }, []);
+    setToken(storedToken);
+    setIsLoading(false);
+  };
 
-  // useEffect(() => {
-  //   if (token) {
-      
-  //   }
-  // }, [token]);
-
-  const pic = userData.profilePhoto;
-
-
+  if (isLoading) {
+    return <div>Loading...</div>; // Or a skeleton loader
+  }
 
   return (
     <div className="navbar bg-base-100">
@@ -106,7 +104,7 @@ const Navbar = () => {
             >
               <div className="w-16 rounded-full">
                 <img
-                  src={pic}
+                  src={userData.profilePhoto}
                   className="w-auto h-auto"
                   alt="Avatar"
                   priority="true"

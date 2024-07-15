@@ -10,6 +10,8 @@ const TestPage = () => {
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState([]);
   const [test, setTest] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const timeRef = useRef(null);
 
   useEffect(() => {
@@ -42,6 +44,7 @@ const TestPage = () => {
   }, [countDown, test]);
 
   const getQuestions = async () => {
+    setIsLoading(true);
     try {
       const response = await axios.get(`${baseUrl}/v1/test`, {
         headers: {
@@ -52,9 +55,10 @@ const TestPage = () => {
       setAnswers(response.data.data.map(() => null));
     } catch (error) {
       console.error(error);
+    } finally {
+      setIsLoading(false);
     }
   };
-  // console.log(questions);
 
   const handleOptionChange = (questionIndex, optionIndex) => {
     const updatedAnswers = [...answers];
@@ -66,22 +70,32 @@ const TestPage = () => {
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
-      // Submit the result
-      const result = questions.map((question, index) => ({
-        questionId: question.id,
-        ans: answers[index] + 1, // Adjust index to match answer (1-based)
-      }));
-      axios
-        .post(`${baseUrl}/v1/test/result`, { result }, {
+      submitResult();
+    }
+  };
+
+  const submitResult = async () => {
+    setIsSubmitting(true);
+    const result = questions.map((question, index) => ({
+      questionId: question.id,
+      ans: answers[index] + 1,
+    }));
+    try {
+      const response = await axios.post(
+        `${baseUrl}/v1/test/result`,
+        { result },
+        {
           headers: {
             authorization: `Bearer ${local.token}`,
           },
-        })
-        .then((response) => {
-            Router.push("/test/result");
-            localStorage.setItem("result", JSON.stringify(response.data.data));
-        })
-        .catch((error) => console.error(error));
+        }
+      );
+      localStorage.setItem("result", JSON.stringify(response.data.data));
+      Router.push("/test/result");
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -91,39 +105,32 @@ const TestPage = () => {
     }
   };
 
-  // Conditionally render loading state
-  // if (questions.length === 0 && test) {
-  //   return <div>Loading...</div>;
-  // }
-
-//   console.log(answers);
-
   return (
     <div>
-      {test === false && (
-        <>
-          <div className="flex flex-col items-center justify-center min-h-screen gap-5 bg-[#081F5C] text-white">
-            <h1 className="text-3xl font-bold">Start Test</h1>
-            <p className="text-lg">
-              Before starting the test, read the{" "}
-              <span
-                onClick={() => document.getElementById("my_modal_2").showModal()}
-                className="underline cursor-pointer text-blue-600"
-              >
-                INSTRUCTIONS
-              </span>{" "}
-              carefully!
-            </p>
-            <button
-              className="btn btn-primary"
-              onClick={() => {
-                setTest(true);
-                getQuestions();
-              }}
+    {test === false && (
+      <>
+        <div className="flex flex-col items-center justify-center min-h-screen gap-5 bg-[#081F5C] text-white">
+          <h1 className="text-3xl font-bold">Start Test</h1>
+          <p className="text-lg">
+            Before starting the test, read the{" "}
+            <span
+              onClick={() => document.getElementById("my_modal_2").showModal()}
+              className="underline cursor-pointer text-blue-600"
             >
-              Start
-            </button>
-          </div>
+              INSTRUCTIONS
+            </span>{" "}
+            carefully!
+          </p>
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              setTest(true);
+              getQuestions();
+            }}
+          >
+            Start
+          </button>
+        </div>
           <dialog id="my_modal_2" className="modal">
             <div className="modal-box">
               <h3 className="font-bold text-lg">Instructions!</h3>
@@ -144,7 +151,12 @@ const TestPage = () => {
           </dialog>
         </>
       )}
-      {test === true && questions.length > 0 && (
+       {test === true && isLoading && (
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="loading loading-spinner loading-lg"></div>
+        </div>
+      )}
+      {test === true && !isLoading && questions.length > 0 && (
         <div className="px-5 py-7 flex flex-col gap-5 justify-between h-screen">
           <div className="flex flex-row justify-between items-center gap-5">
             <h1 className="text-3xl font-bold text-gray-500">
@@ -204,8 +216,16 @@ const TestPage = () => {
             >
               Previous
             </button>
-            <button className="btn btn-primary" onClick={handleNextQuestion}>
-              {currentQuestion < questions.length - 1 ? "Next" : "Submit"}
+            <button
+              className="btn btn-primary"
+              onClick={handleNextQuestion}
+              disabled={isSubmitting}
+            >
+              {currentQuestion < questions.length - 1 ? "Next" : isSubmitting ? (
+                <span className="loading loading-spinner loading-sm"></span>
+              ) : (
+                "Submit"
+              )}
             </button>
           </div>
         </div>
