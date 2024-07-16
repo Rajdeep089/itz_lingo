@@ -6,12 +6,13 @@ import axios from "axios";
 const Annually = () =>  {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [isPaymentInProgress, setIsPaymentInProgress] = useState(false);
   
     const getData = async () => {
       setLoading(true);
       try {
         const response = await axios.get(
-          `${baseUrl}/v1/payment/plan?duration=monthly`,
+          `${baseUrl}/v1/payment/plan?duration=yearly`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -34,8 +35,11 @@ const Annually = () =>  {
     // console.log(data);
 
     const handleBuyNow = async (planId, amount) => {
-      // console.log(planId, amount);
+      if (isPaymentInProgress) return; // Prevent multiple clicks
+    
       try {
+        setIsPaymentInProgress(true);
+    
         const orderResponse = await axios.post(
           `${baseUrl}/v1/payment`,
           {
@@ -48,11 +52,9 @@ const Annually = () =>  {
             },
           }
         );
-  
+    
         const { orderId } = orderResponse.data.data;
-
-        // console.log('Amount before Razorpay:', amount, typeof amount);
-  
+    
         const options = {
           key: "rzp_test_5ureH41rm3YjF3",
           amount: amount * 100,
@@ -61,25 +63,32 @@ const Annually = () =>  {
           description: "Purchase Description",
           order_id: orderId,
           handler: function (response) {
-            alert("Payment successful. Payment ID: " + response.razorpay_payment_id);
+            alert(
+              "Payment successful. Payment ID: " + response.razorpay_payment_id
+            );
             // Handle successful payment (e.g., update user subscription status)
-
           },
           prefill: {
-            name: localStorage.getItem("name") || '',
-            email: localStorage.getItem("email") || '',
-            contact: localStorage.getItem("contact") || '',
+            name: localStorage.getItem("name") || "",
+            email: localStorage.getItem("email") || "",
+            contact: localStorage.getItem("contact") || "",
           },
           theme: {
             color: "#081F5C",
           },
+          modal: {
+            ondismiss: function() {
+              setIsPaymentInProgress(false);
+            }
+          }
         };
-  
+    
         const rzp = new window.Razorpay(options);
         rzp.open();
       } catch (error) {
         console.error("Error initiating payment:", error);
         alert("Error initiating payment. Please try again.");
+        setIsPaymentInProgress(false);
       }
     };
 
@@ -134,10 +143,14 @@ const Annually = () =>  {
                   </div>
                 ))}
                 <button
-                onClick={() => handleBuyNow(item.id, item.discountAmount)}
-                className="btn md:btn-sm btn-xs md:text-sm text-[11px] mb-0 md:mt-3 group-hover:mt-3 md:group-hover:mb-3 md:group-hover:mt-0 bg-[#081F5C] text-white group-hover:bg-white group-hover:text-[#081F5C] hover:scale-105 w-[70%] mx-auto transition-all duration-500 ease-in-out">
-                  Buy Now
-                </button>
+  onClick={() => handleBuyNow(item.id, item.discountAmount)}
+  disabled={isPaymentInProgress}
+  className={`btn md:btn-sm btn-xs md:text-sm text-[11px] bg-[#081F5C] text-white group-hover:bg-white group-hover:text-[#081F5C] hover:scale-105 w-[70%] mx-auto transition-all duration-300 ease-in-out transform translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 ${
+    isPaymentInProgress ? 'opacity-50 cursor-not-allowed' : ''
+  }`}
+>
+  {isPaymentInProgress ? 'Processing...' : 'Buy Now'}
+</button>
               </div>
             </div>
           </div>

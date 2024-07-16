@@ -76,15 +76,21 @@ const Chats = () => {
 
   useEffect(() => {
     if (lastMessageSenderId && users.length > 0) {
-      const userToOpen = users.find((user) => user.user.id === lastMessageSenderId);
-      if (userToOpen && userToOpen !== userToOpenRef.current) {
-        userToOpenRef.current = userToOpen;
-        console.log(userToOpen);
-        handleConvoSelect(userToOpen);
-        router.replace("/chats", undefined, { shallow: true });
+      // Only switch to the new message sender's chat if no conversation is currently open
+      if (!convoId) {
+        const userToOpen = users.find((user) => user.user.id === lastMessageSenderId);
+        if (userToOpen && userToOpen !== userToOpenRef.current) {
+          userToOpenRef.current = userToOpen;
+          console.log(userToOpen);
+          handleConvoSelect(userToOpen);
+          router.replace("/chats", undefined, { shallow: true });
+        }
+      } else if (convoId) {
+        fetchMessages();
       }
     }
-  }, [lastMessageSenderId, users, handleConvoSelect, router]);
+  }, [lastMessageSenderId, users, handleConvoSelect, router, convoId]);
+  
 
   const fetchUsers = async () => {
     if (token) {
@@ -224,7 +230,7 @@ const Chats = () => {
   const fetchMessages = async () => {
     if (!convoId) return; // Don't fetch if there's no selected conversation
 
-    setIsChatLoading(true);
+    // setIsChatLoading(true);
     try {
       const response = await axios.get(
         `${baseUrl}/v1/user/chat/${convoId.userId}`,
@@ -238,7 +244,7 @@ const Chats = () => {
     } catch (error) {
       console.error(error);
     } finally {
-      setIsChatLoading(false);
+      // setIsChatLoading(false);
     }
   };
 
@@ -257,14 +263,14 @@ const Chats = () => {
 
   const handleNewMessage = (newMessage) => {
     setLatestMessage(newMessage);
-
+  
     if (
       (newMessage.senderId === convoId?.userId && newMessage.rid === userId) ||
       (newMessage.senderId === userId && newMessage.rid === convoId?.userId)
     ) {
       setMessages((prevMessages) => [...prevMessages, newMessage]);
     }
-
+  
     // Update unread counts for other conversations
     if (
       newMessage.senderId !== userId &&
@@ -276,7 +282,7 @@ const Chats = () => {
       }));
     }
   };
-
+  
   useEffect(() => {
     if (latestMessage) {
       setUsers((prevUsers) =>

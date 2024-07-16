@@ -5,6 +5,7 @@ import axios from "axios";
 const Quarterly = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isPaymentInProgress, setIsPaymentInProgress] = useState(false);
 
   const getData = async () => {
     try {
@@ -32,7 +33,11 @@ const Quarterly = () => {
   // console.log(data);
 
   const handleBuyNow = async (planId, amount) => {
+    if (isPaymentInProgress) return; // Prevent multiple clicks
+  
     try {
+      setIsPaymentInProgress(true);
+  
       const orderResponse = await axios.post(
         `${baseUrl}/v1/payment`,
         {
@@ -45,9 +50,9 @@ const Quarterly = () => {
           },
         }
       );
-
+  
       const { orderId } = orderResponse.data.data;
-
+  
       const options = {
         key: "rzp_test_5ureH41rm3YjF3",
         amount: amount * 100,
@@ -69,13 +74,19 @@ const Quarterly = () => {
         theme: {
           color: "#081F5C",
         },
+        modal: {
+          ondismiss: function() {
+            setIsPaymentInProgress(false);
+          }
+        }
       };
-
+  
       const rzp = new window.Razorpay(options);
       rzp.open();
     } catch (error) {
       console.error("Error initiating payment:", error);
       alert("Error initiating payment. Please try again.");
+      setIsPaymentInProgress(false);
     }
   };
 
@@ -135,9 +146,12 @@ const Quarterly = () => {
               ))}
               <button
                 onClick={() => handleBuyNow(item.id, item.discountAmount)}
-                className="btn md:btn-sm btn-xs md:text-sm text-[11px] bg-[#081F5C] text-white group-hover:bg-white group-hover:text-[#081F5C] hover:scale-105 w-[70%] mx-auto transition-all duration-300 ease-in-out transform translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100"
+                disabled={isPaymentInProgress}
+                className={`btn md:btn-sm btn-xs md:text-sm text-[11px] bg-[#081F5C] text-white group-hover:bg-white group-hover:text-[#081F5C] hover:scale-105 w-[70%] mx-auto transition-all duration-300 ease-in-out transform translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 ${
+                  isPaymentInProgress ? "opacity-50 cursor-not-allowed" : ""
+                }`}
               >
-                Buy Now
+                {isPaymentInProgress ? "Processing..." : "Buy Now"}
               </button>
             </div>
           </div>

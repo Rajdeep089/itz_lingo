@@ -14,19 +14,37 @@ const ResourceItemSkeleton = () => (
   </div>
 );
 
-const Resources = ({ onScroll }) => {
-  const [resources, setResources] = useState({
-    stories: [],
-    vocabulary: [],
-    roleplay: [],
-    describeMe: [],
-    conversations: [],
-    phrases: [],
-  });
+const ResourceItem = React.memo(({ item, categoryKey }) => (
+  <Link href={`/resources/${categoryKey}/${item.id}`} className="carousel-item">
+    <div className="relative">
+      <img
+        src={item.imageUrl}
+        className="rounded-box w-[300px]"
+        alt={item.title}
+        loading="lazy"
+      />
+      <div className="absolute bottom-0 text-white p-5">
+        <p className="text-xl font-semibold my-1">{item.title}</p>
+      </div>
+    </div>
+  </Link>
+));
 
+const Resources = ({ onScroll }) => {
+  const [resources, setResources] = useState({});
   const [loading, setLoading] = useState(true);
 
-  const fetchData = async (endpoint, category) => {
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedData = localStorage.getItem("resources");
+      if (savedData) {
+        setResources(JSON.parse(savedData));
+        setLoading(false);
+      }
+    }
+  }, []);
+
+  const fetchData = useCallback(async (endpoint, category) => {
     try {
       const response = await axios.get(
         `${baseUrl}/v1/${endpoint}/title?limit=7`,
@@ -36,20 +54,25 @@ const Resources = ({ onScroll }) => {
           },
         }
       );
-      setResources((prevResources) => ({
-        ...prevResources,
-        [category]: response.data.data,
-      }));
+      return { [category]: response.data.data };
     } catch (error) {
       console.error(error);
-      throw error;
+      return { [category]: [] };
     }
-  };
+  }, []);
 
   useEffect(() => {
     const fetchAllData = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        localStorage.removeItem("resources");
+        setResources({});
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
-      await Promise.all([
+      const results = await Promise.all([
         fetchData("stories", "stories"),
         fetchData("vocabulary", "vocabulary"),
         fetchData("roleplay", "roleplay"),
@@ -57,24 +80,30 @@ const Resources = ({ onScroll }) => {
         fetchData("conversations", "conversations"),
         fetchData("phrases", "phrases"),
       ]);
+
+      const mergedResources = Object.assign({}, ...results);
+      setResources(mergedResources);
+      localStorage.setItem("resources", JSON.stringify(mergedResources));
       setLoading(false);
     };
 
-    fetchAllData();
-  }, []);
+    if (typeof window !== "undefined") {
+      fetchAllData();
+    }
+  }, [fetchData]);
 
   const carouselRefs = useRef([]);
 
-  const scrollCarousel = (index, direction) => {
+  const scrollCarousel = useCallback((index, direction) => {
     const carousel = carouselRefs.current[index];
     if (carousel) {
-      const scrollAmount = 300; // Adjust this value as needed
+      const scrollAmount = 300;
       carousel.scrollBy({
         left: direction === "left" ? -scrollAmount : scrollAmount,
         behavior: "smooth",
       });
     }
-  };
+  }, []);
 
   const handleScroll = useCallback(
     (index) => {
@@ -136,29 +165,15 @@ const Resources = ({ onScroll }) => {
               className="carousel carousel-center p-4 space-x-4 bg-gray-200 rounded-box"
             >
               {loading
-                ? // Show skeletons while loading
-                  Array(7)
+                ? Array(7)
                     .fill()
                     .map((_, i) => <ResourceItemSkeleton key={i} />)
-                : resources[category.key].map((item) => (
-                    <Link
-                      href={`/resources/${category.key}/${item.id}`}
+                : resources[category.key]?.map((item) => (
+                    <ResourceItem
                       key={item.id}
-                      className="carousel-item"
-                    >
-                      <div className="relative">
-                        <img
-                          src={item.imageUrl}
-                          className="rounded-box w-[300px]"
-                          alt={item.title}
-                        />
-                        <div className="absolute bottom-0 text-white p-5">
-                          <p className="text-xl font-semibold my-1">
-                            {item.title}
-                          </p>
-                        </div>
-                      </div>
-                    </Link>
+                      item={item}
+                      categoryKey={category.key}
+                    />
                   ))}
             </div>
             <button
@@ -186,4 +201,5 @@ const Resources = ({ onScroll }) => {
     </div>
   );
 };
-export default Resources;
+
+export default React.memo(Resources);

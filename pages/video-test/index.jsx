@@ -5,6 +5,8 @@ import { useSocket } from "../../context/SocketProvider";
 import CallHandleButtons from "@/components/CallHandleButtons";
 import Resources from "./components/Resources";
 import CardComponent from "./components/CardComponent";
+import Avatar from "../../Assets/av.png"
+import Image from "next/image";
 
 function Videocall() {
   const [yourID, setYourID] = useState("");
@@ -356,8 +358,8 @@ function Videocall() {
     socket.current.emit("end-call", { callId: caller, userId: yourID });
     console.log(caller);
 
-    // Redirect to another page
-    router.push("/chats");
+    // Redirect to back to the chat page
+    history.back()
   }, [receiver, to, yourID, stopAllMediaTracks]);
 
   const debounce = (func, wait) => {
@@ -597,9 +599,12 @@ function Videocall() {
     }
   };
 
+  const [isVideoMuted, setIsVideoMuted] = useState(false);
+
   const handleToggleVideo = () => {
     const videoTrack = stream.getVideoTracks()[0];
     setIsVideoOnHold(!isVideoOnHold);
+    setIsVideoMuted(!isVideoMuted);
 
     if (videoTrack) {
       videoTrack.enabled = isVideoOnHold;
@@ -621,6 +626,18 @@ function Videocall() {
     console.log("Audio tracks:", stream.getAudioTracks().length);
     console.log("Video tracks:", stream.getVideoTracks().length);
   }, [stream]);
+
+  useEffect(() => {
+    if (!isVideoMuted && stream) {
+      const videoTrack = stream.getVideoTracks()[0];
+      if (videoTrack) {
+        videoTrack.enabled = true;
+      }
+      if (userVideo.current) {
+        userVideo.current.srcObject = stream;
+      }
+    }
+  }, [isVideoMuted, stream]);
 
   return (
     <div className="bg-black h-screen relative duration-300 transition-transform">
@@ -649,7 +666,7 @@ function Videocall() {
               autoPlay
               playsInline
               style={{ width: "100%", height: "auto" }}
-              className="overflow-hidden scale-x-[-1] rounded-lg transition-all duration-300"
+              className="overflow-hidden scale-x-[-1] rounded-lg transition-all duration-300 border"
             />
           </div>
         )}
@@ -663,7 +680,16 @@ function Videocall() {
           <h1 className="text-sm text-white font-poppins font-semibold md:text-xl mb-1 text-center mt-1">
             Me
           </h1>
-          <video
+          {isVideoMuted ? (
+            <Image
+            src={Avatar} // Adjust this path to where your image is actually located
+            alt="Avatar"
+            width={500}
+            height={500}
+            className="mx-auto object-cover rounded-lg"
+          />
+          ) : (
+            <video
             ref={userVideo}
             autoPlay
             playsInline
@@ -671,6 +697,8 @@ function Videocall() {
             style={{ width: "100%", height: "auto" }}
             className="overflow-hidden scale-x-[-1] rounded-lg"
           />
+          )}
+          
         </div>
       </div>
 

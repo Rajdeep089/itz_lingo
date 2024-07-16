@@ -1,7 +1,10 @@
 "use client";
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useUser } from '../../config/UserContext';
+import { useAuth } from '../../config/AuthContext';
 import axios from 'axios';
 import { baseUrl } from '@/config';
+
 
 const UserSkeleton = () => (
   <div className="carousel-item rounded-lg p-3 border bg-white border-gray-300 shadow-lg w-1/4 flex-shrink-0 animate-pulse">
@@ -17,49 +20,36 @@ const UserSkeleton = () => (
 );
 
 const UserSection = () => {
-  const [userList, setUserList] = useState([]);
-  const [token, setToken] = useState(null);
+  const { userList, fetchUsers, lastFetched, setUserList } = useUser();
+  const { token, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const carouselRef = useRef(null);
 
-
-  const getUserList = useCallback(async (currentToken) => {
-    setIsLoading(true);
-    try {
-      let response;
-      if (currentToken) {
-        response = await axios.get(`${baseUrl}/v1/user/list`, {
-          headers: {
-            Authorization: `Bearer ${currentToken}`,
-          },
-        });
-      } else {
-        response = await axios.get(`${baseUrl}/v1/user/login`);
-      }
-      setUserList(response.data.data);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    setToken(storedToken);
-    getUserList(storedToken);
-  }, [getUserList]);
+    const storedUserList = localStorage.getItem('userList');
+    const storedLastFetched = localStorage.getItem('lastFetched');
+
+    if (storedUserList && storedLastFetched) {
+      setUserList(JSON.parse(storedUserList));
+      setIsLoading(false);
+
+      // Refresh data if it's older than 5 minutes or if the user just logged in
+      if (Date.now() - parseInt(storedLastFetched) > 5 * 60 * 1000 || !lastFetched) {
+        fetchUsers();
+      }
+    } else if (isAuthenticated) {
+      fetchUsers();
+    }
+  }, [fetchUsers, isAuthenticated, lastFetched]);
 
   const sendRequest = async (e, id) => {
     e.preventDefault();
     try {
       const response = await axios.get(`${baseUrl}/v1/user/connection/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
       alert(response.data.message);
-      getUserList();
+      fetchUsers();
     } catch (error) {
       console.error(error);
     }
@@ -157,7 +147,7 @@ const UserSection = () => {
     </div>
   );
 
-  return <>{renderUserList(token !== null)}</>;
+  return <>{renderUserList(isAuthenticated)}</>;
 };
 
 export default UserSection;
